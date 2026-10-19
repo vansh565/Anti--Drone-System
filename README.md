@@ -4,13 +4,17 @@ A Flask and Ultralytics YOLO application for detecting multicopters/drones from 
 
 > **Scope:** This project detects and visualizes objects. The inspected app does not send commands to a drone or provide flight control. Its map is a perspective-styled visualization of camera-image coordinates, not a measured 3D reconstruction. A single ordinary camera cannot determine true depth without calibration or another depth source.
 
+
+
+
+
 ## Demo media
 
 <div align="center">
 <img src="capture_20261016_162131_180.jpg" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
 
 <video controls width="1100" height="1200" style="max-width: 100%; object-fit: contain;">
-    <source src="https://github.com/user-attachments/assets/fd450cb7-b238-4b9f-9230-d96ba72c6090" type="video/mp4">
+    <source src="https://github.com/user-attachments/assets/af62a64d-27af-460f-b574-3bbdf03a1fba" type="video/mp4">
     Your browser does not support MP4 video playback. [Play or download the sample video](Recording%202026-10-19%20181230.mp4).
 </video>
 </div>
@@ -128,6 +132,10 @@ Generated uploads, processed videos, captures, and training weights can be large
 No `requirements.txt`, `pyproject.toml`, or environment file is currently present. The app imports Flask, Flask-CORS, OpenCV, NumPy, and Ultralytics. Video/dataset utilities in the archive additionally use scikit-learn and tqdm.
 
 ### Windows PowerShell setup
+
+Uploading WhatsApp Video 2026-10-19 at 10.21.37 PM.mp4…
+
+
 
 Run from the project root (`D:\Multicopter`):
 
