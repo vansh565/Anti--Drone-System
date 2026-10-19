@@ -10,7 +10,7 @@ A Flask and Ultralytics YOLO application for detecting multicopters/drones from 
 <img src="capture_20261016_162131_180.jpg" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
 
 <video controls width="1100" height="1200" style="max-width: 100%; object-fit: contain;">
-    <source src="Recording%202026-10-19%20181230.mp4" type="video/mp4">
+    <source src="https://github.com/user-attachments/assets/fd450cb7-b238-4b9f-9230-d96ba72c6090" type="video/mp4">
     Your browser does not support MP4 video playback. [Play or download the sample video](Recording%202026-10-19%20181230.mp4).
 </video>
 </div>
@@ -262,3 +262,18 @@ The app currently starts Flask with `debug=True`, accepts uploads, enables CORS,
 - validate and safely retain uploaded files; implement cleanup/retention limits;
 - use a persistent job queue/store if jobs must survive restarts;
 - place the service behind HTTPS and network access controls.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
