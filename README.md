@@ -109,16 +109,12 @@ The frontend offers camera index examples `0` and `1` and an example IP-camera U
 
 | Path | Purpose |
 | --- | --- |
-| `2.py` | Current Flask application: model loading, inference, camera streaming, video jobs, map/annotation, and APIs. |
-| `1.py` | Older Flask application copy; it may not include current settings/calibration endpoints. Prefer `2.py` with the current templates. |
+| `Claude.py` | Current Flask application: model loading, inference, camera streaming, video jobs, map/annotation, and APIs. |
 | `templates/index.html` | Main live-camera and image-upload dashboard. |
 | `templates/camera.html` | Dedicated live-camera dashboard. |
 | `templates/video.html` | Video upload, progress, result, and job-history UI. |
 | `runs/` | Ultralytics training run arguments, metrics/logs, and checkpoints. |
-| `combined_dataset/` | Dataset used by the `combined_yolo11l_1024` run; its YAML declares one class, `multicopter`. |
-| `drone_octocopter_dataset/`, `combine/`, `new_dataset_check/`, `octacopter_temp/`, `octacoptor/`, `yolo_dataset/` | Other dataset variants/configurations. Check each `data.yaml`; they do not all use the same classes or paths. |
 | `train/`, `valid/`, `test/`, `uploads/` | Additional dataset/image folders in the workspace. |
-| `archive/` | Older assets, datasets, and [archive/1.py](archive/1.py), a dataset conversion/splitting utility. |
 | `yolo11l.pt`, `yolo11m.pt`, `yolo11x.pt`, `yolo26n.pt` | Additional model weights; the web app uses the checkpoint configured in `2.py`, not automatically the root-level weights. |
 | `static/uploads/` | Uploaded source videos. |
 | `static/processed/` | Generated annotated videos. |
