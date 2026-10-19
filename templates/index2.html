@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drone Detection Console</title>
+<link rel="stylesheet" href="/templates/dashboard.css">
+</head>
+<body data-initial-tab="{{ initial_tab|default('live') }}">
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="7" cy="7" r="4"/><circle cx="25" cy="7" r="4"/><circle cx="7" cy="25" r="4"/><circle cx="25" cy="25" r="4"/>
+      <path d="M10 10l12 12M22 10L10 22"/><rect x="13" y="13" width="6" height="6" rx="1.5" fill="currentColor"/>
+    </svg>
+    <div><h1>Drone Detection Console</h1><div class="sub">YOLO11 · auto-zoom multi-scale · low-latency</div></div>
+  </div>
+  <div class="chips" id="healthChips"><span class="chip">connecting…</span></div>
+  <div class="conn" id="connState"><span class="dot"></span><span id="connText">idle</span></div>
+</header>
+
+<nav class="tabs">
+  <button data-tab="live" class="active">Live camera</button>
+  <button data-tab="image">Image</button>
+  <button data-tab="video">Video</button>
+</nav>
+
+<main>
+<!-- =========================== LIVE =========================== -->
+<section class="tab active" id="tab-live">
+  <div class="card toolbar">
+    <input type="text" id="camSource" value="0" placeholder="0 · rtsp://user:pass@192.168.1.64:554/stream1 · D:\clips\test.mp4" aria-label="Camera source">
+    <button class="btn primary" id="btnStart">Start</button>
+    <button class="btn danger" id="btnStop">Stop</button>
+    <button class="btn" id="btnCapture">Capture</button>
+    <div class="seg" role="group" aria-label="Feed image">
+      <button data-base="raw" class="on">Original</button><button data-base="enhanced">Enhanced</button>
+    </div>
+    <div class="msg" id="camMsg">Enter a webcam index (0, 1 …), an RTSP URL or a video file path, then Start.</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" id="kpiTargets"><div class="k">Targets</div><div class="v" id="kTargets">–</div><div class="s" id="kTargetsS">&nbsp;</div></div>
+    <div class="kpi"><div class="k">Detection FPS</div><div class="v" id="kDetFps">–</div><div class="s" id="kDetFpsS">&nbsp;</div></div>
+    <div class="kpi"><div class="k">Capture FPS</div><div class="v" id="kCapFps">–</div><div class="s" id="kCapFpsS">&nbsp;</div></div>
+    <div class="kpi"><div class="k">Displayed FPS</div><div class="v" id="kDispFps">–</div><div class="s">browser receives</div></div>
+    <div class="kpi"><div class="k">App latency</div><div class="v" id="kLat">–</div><div class="s" id="kLatS">capture → published</div></div>
+    <div class="kpi"><div class="k">YOLO full / zoom</div><div class="v" id="kYolo">–</div><div class="s" id="kYoloS">ms per frame</div></div>
+    <div class="kpi"><div class="k">Zoom crops / frame</div><div class="v" id="kCrops">–</div><div class="s" id="kCropsS">&nbsp;</div></div>
+    <div class="kpi"><div class="k">Found only by zoom</div><div class="v" id="kZoomOnly">–</div><div class="s" id="kZoomOnlyS">&nbsp;</div></div>
+  </div>
+
+  <div class="live-layout">
+    <div class="panels">
+      <article class="panel">
+        <header><span class="tag">A</span><h2>Original live feed</h2>
+          <div class="right"><span class="badge sync" id="badgeA">frame –</span></div></header>
+        <div class="viewport" id="vpA"><img id="feedImg" alt="Annotated live feed" hidden>
+          <div class="placeholder" id="phA"><span>Camera stopped</span></div></div>
+        <footer id="footA">Boxes, IDs, centre markers and crosshairs drawn on the original frame</footer>
+      </article>
+
+      <article class="panel">
+        <header><span class="tag">B</span><h2>Auto-zoom targets</h2>
+          <div class="right"><span class="badge sync" id="badgeB">frame –</span></div></header>
+        <div class="viewport zoom-viewport" id="vpB"><div class="zoom-tiles" id="zoomTiles"></div>
+          <div class="placeholder" id="phB"><span>Waiting for target</span></div></div>
+        <footer id="footB">One zoom view per detected target</footer>
+      </article>
+
+      <article class="panel">
+        <header><span class="tag">C</span><h2>2D target map</h2>
+          <div class="right"><span class="badge sync" id="badgeC">frame –</span></div></header>
+        <div class="viewport" id="vpC"><canvas id="map2d" aria-label="2D image-plane target map"></canvas></div>
+        <footer>Image-plane / relative-position map · trails, IDs, offsets, velocity</footer>
+      </article>
+
+      <article class="panel">
+        <header><span class="tag">D</span><h2>3D-style view</h2>
+          <div class="right">
+            <select id="depthMode" title="Depth source for the 3D view" aria-label="Depth source">
+              <option value="auto">Depth: auto</option>
+              <option value="plane">Depth: none (image plane)</option>
+              <option value="range">Depth: calibrated range</option>
+              <option value="size">Depth: apparent size (illustrative)</option>
+            </select>
+            <span class="badge sync" id="badgeD">frame –</span></div></header>
+        <div class="viewport" id="vpD"><canvas id="view3d" aria-label="3D-style target view"></canvas></div>
+        <footer class="warnline" id="footD">Approximate visualisation — not measured 3D positions</footer>
+      </article>
+    </div>
+
+    <aside class="sidebar">
+      <div class="card">
+        <h3>Targets <span class="muted" id="tCount"></span></h3>
+        <div class="targets" id="targetList"><span class="muted">—</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Performance</h3>
+        <table class="perf" id="perfTable"><tr><td class="muted">idle</td></tr></table>
+        <div class="hint" id="latNote">App latency excludes camera encoding, network/RTSP buffering and browser display.</div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="btnReset">Reset stats</button>
+          <button class="btn" id="btnCompare">Compare 4 modes (8 s each)</button>
+        </div>
+        <div id="compareResult" style="margin-top:8px"></div>
+      </div>
+
+      <div class="card">
+        <h3>Detection</h3>
+        <div class="row"><label class="lbl">Confidence</label>
+          <input type="range" id="conf" min="0.05" max="0.95" step="0.01" value="0.50"><span class="mono" id="confVal">0.50</span></div>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="detEnabled" checked> Detection on</label>
+          <label class="switch"><input type="checkbox" id="showCenter" checked> Center</label>
+          <label class="switch"><input type="checkbox" id="showCross" checked> Crosshair</label>
+          <label class="switch"><input type="checkbox" id="hideEdges"> Hide edge hits</label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Auto-zoom (multi-scale)</h3>
+        <div class="row"><label class="switch"><input type="checkbox" id="zEnabled" checked> Enabled</label>
+          <label class="switch"><input type="checkbox" id="zMotion" checked> Motion candidates</label></div>
+        <div class="row"><label class="lbl">Zoom factors</label>
+          <div class="factors" id="zFactors"></div></div>
+        <div class="row"><label class="lbl">Max crops / frame</label>
+          <input type="range" id="zMax" min="0" max="8" step="1" value="3"><span class="mono" id="zMaxVal">3</span></div>
+        <div class="row"><label class="switch"><input type="checkbox" id="zCoarse" checked> Coarse search</label>
+          <label>every</label><input type="number" id="zCoarseEvery" min="1" value="5"><label>frames, grid</label>
+          <select id="zCoarseZoom"><option>1.5</option><option selected>2</option><option>3</option><option>4</option></select></div>
+        <div class="row"><label class="lbl">Candidate conf</label>
+          <input type="number" id="zCand" min="0.01" max="0.9" step="0.01" value="0.10">
+          <label>Zoom-only confirm</label>
+          <select id="zConfirm"><option value="1">1 frame</option><option value="2" selected>2 frames</option><option value="3">3 frames</option></select></div>
+        <div class="row"><label class="switch"><input type="checkbox" id="zAdaptive" checked> Adaptive budget</label>
+          <label>target</label><input type="number" id="zBudget" min="10" step="10" value="100"><label>ms / frame</label></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnZoomApply">Apply</button>
+          <button class="btn" id="btnZoomReset">Defaults</button></div>
+        <div class="hint">Candidate conf only decides where to zoom; reported detections still need the main confidence threshold.</div>
+      </div>
+
+      <div class="card">
+        <h3>Refinement</h3>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="rfEnabled" checked> Enhancement</label>
+          <select id="rfMode"><option value="adaptive">adaptive</option><option value="always">always</option></select>
+          <label class="switch"><input type="checkbox" id="rfClahe" checked> CLAHE</label>
+        </div>
+        <div class="row"><label class="lbl">CLAHE clip</label>
+          <input type="range" id="rfClip" min="0.5" max="6" step="0.1" value="2.0"><span class="mono" id="rfClipVal">2.0</span></div>
+        <div class="row"><label class="lbl">Sharpen</label>
+          <input type="range" id="rfSharp" min="0" max="1.5" step="0.05" value="0.3"><span class="mono" id="rfSharpVal">0.30</span></div>
+        <div class="row"><label class="lbl">Brightness fix</label>
+          <select id="rfBright"><option value="display">display only (recommended)</option>
+            <option value="detector">display + detector</option><option value="off">off</option></select></div>
+        <div class="row"><label class="switch"><input type="checkbox" id="rfDenoise"> Denoise</label>
+          <select id="rfDenoiseMethod"><option value="gaussian">gaussian</option><option value="median">median</option>
+            <option value="bilateral">bilateral</option><option value="nlmeans">nlmeans (slow)</option></select></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="btnRefine">Apply</button><button class="btn" id="btnRefineReset">Defaults</button></div>
+        <details><summary>Last refinement</summary><div class="mono" id="refineInfo" style="font-size:11.5px;margin-top:6px"></div></details>
+      </div>
+
+      <div class="card">
+        <h3>Display &amp; calibration</h3>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="dRegions" checked> Zoom regions</label>
+          <label class="switch"><input type="checkbox" id="dTrails" checked> Trails</label>
+          <label class="switch"><input type="checkbox" id="dScene"> Burn-in scene map</label>
+        </div>
+        <div class="row"><label class="lbl">JPEG quality</label>
+          <input type="range" id="dJpeg" min="40" max="95" step="5" value="80"><span class="mono" id="dJpegVal">80</span></div>
+        <div class="row"><label class="lbl">Focal length px</label><input type="number" id="focalPx" value="0" min="0" step="1">
+          <label>Drone width m</label><input type="number" id="widthM" value="0" min="0" step="0.01"></div>
+        <div class="row"><label class="lbl">Nominal HFOV °</label><input type="number" id="hfov" value="60" min="5" max="170" step="1">
+          <button class="btn" id="btnCalib">Apply</button></div>
+        <div class="hint">Range (and m/s) only appear when focal length and the real drone width are set. Without them, maps show image-plane positions only.</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- =========================== IMAGE =========================== -->
+<section class="tab" id="tab-image">
+  <div class="card">
+    <div class="row">
+      <input type="file" id="imgFile" accept="image/*">
+      <label>Conf</label><input type="number" id="imgConf" value="0.50" min="0.05" max="0.95" step="0.05">
+      <label class="switch"><input type="checkbox" id="imgZoom" checked> Auto-zoom</label>
+      <label class="switch"><input type="checkbox" id="imgEnhance" checked> Enhance</label>
+      <label class="switch"><input type="checkbox" id="imgCenter" checked> Center</label>
+      <label class="switch"><input type="checkbox" id="imgCross" checked> Crosshair</label>
+      <label class="switch"><input type="checkbox" id="imgEdges"> Hide edge hits</label>
+      <button class="btn primary" id="btnDetect">Detect</button>
+    </div>
+    <div class="summary" id="imgSummary"></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Annotated (zoom regions shown)</h3><figure class="figure"><img id="imgAnnotated" alt=""></figure></div>
+    <div class="card"><h3>Auto-zoom view</h3><figure class="figure"><img id="imgZoomView" alt=""><figcaption id="imgZoomCap"></figcaption></figure></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>Detections</h3><div style="overflow:auto"><table class="data" id="imgTable"></table></div></div>
+    <div class="card"><h3>Zoom crops processed</h3><div style="overflow:auto"><table class="data" id="imgCrops"></table></div></div>
+  </div>
+</section>
+
+<!-- =========================== VIDEO =========================== -->
+<section class="tab" id="tab-video">
+  <div class="card">
+    <div class="row">
+      <input type="file" id="vidFile" accept="video/*">
+      <label>Conf</label><input type="number" id="vidConf" value="0.50" min="0.05" max="0.95" step="0.05">
+      <label>Every Nth frame</label><input type="number" id="vidSkip" value="1" min="1" step="1">
+      <label class="switch"><input type="checkbox" id="vidZoom" checked> Auto-zoom</label>
+      <label class="switch"><input type="checkbox" id="vidEnhance" checked> Enhance</label>
+      <label class="switch"><input type="checkbox" id="vidCenter" checked> Center</label>
+      <label class="switch"><input type="checkbox" id="vidCross" checked> Crosshair</label>
+      <label class="switch"><input type="checkbox" id="vidEdges"> Hide edge hits</label>
+      <button class="btn primary" id="btnUpload">Upload &amp; process</button>
+    </div>
+    <div class="row" style="margin-top:10px"><div class="progress"><div id="vidBar"></div></div><span class="mono" id="vidPct">0%</span></div>
+    <div class="row muted mono" id="vidMsg" style="font-size:12px;margin-top:6px"></div>
+  </div>
+  <div class="grid2">
+    <div>
+      <div class="card"><h3>Processed video</h3>
+        <figure class="figure"><video id="vidOut" controls hidden></video></figure><span class="muted" id="vidOutEmpty">Not finished yet</span></div>
+      <div class="card"><h3>Auto-zoom snapshots (max 1 / s)</h3><div class="gallery" id="vidSnaps"><span class="muted">—</span></div></div>
+    </div>
+    <div>
+      <div class="card"><h3>Latest detections</h3><div class="targets" id="vidTargets"><span class="muted">—</span></div></div>
+      <div class="card"><h3>Jobs</h3><div class="targets" id="vidJobs"></div></div>
+    </div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="/static/js/target_views.js"></script>
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

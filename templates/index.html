@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAV Target Detection • Real‑Time + Image</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            padding: 20px;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        .container-main {
+            max-width: 1500px;
+            margin: auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #00d2ff;
+            font-weight: bold;
+            font-size: 2.2rem;
+            text-shadow: 0 0 20px rgba(0,210,255,0.3);
+        }
+        .subtitle {
+            color: #aaa;
+            font-size: 1rem;
+        }
+        /* ----- video / stream ----- */
+        .video-container {
+            position: relative;
+            background: #000;
+            border: 2px solid #00d2ff;
+            border-radius: 16px;
+            overflow: hidden;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+        .video-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .video-status {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(0,0,0,.80);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #00ff00;
+            border: 1px solid rgba(0,255,0,0.4);
+            backdrop-filter: blur(4px);
+        }
+        .video-bottom {
+            position: absolute;
+            bottom: 14px;
+            left: 14px;
+            background: rgba(0,0,0,.80);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-family: 'Courier New', monospace;
+            color: #ffff00;
+            border: 1px solid rgba(255,255,0,0.3);
+            backdrop-filter: blur(4px);
+            font-size: 14px;
+        }
+        /* ----- controls ----- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 22px 0;
+        }
+        .btn-custom {
+            border: none;
+            border-radius: 40px;
+            padding: 12px 32px;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .btn-start {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white;
+        }
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,210,255,0.4);
+        }
+        .btn-stop {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+        }
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,65,108,0.4);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        /* ----- stats ----- */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-top: 10px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 18px 10px;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00d2ff;
+            line-height: 1.2;
+        }
+        .stat-label {
+            color: #aaa;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+        /* ----- settings panels ----- */
+        .settings {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .settings h5 {
+            color: #00d2ff;
+            margin-bottom: 16px;
+        }
+        .form-range {
+            width: 100%;
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 10px;
+        }
+        .form-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #00d2ff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 10px #00d2ff;
+        }
+        .form-check-input:checked {
+            background-color: #00d2ff;
+            border-color: #00d2ff;
+        }
+        /* ----- detection list ----- */
+        .detection-list {
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            padding: 14px;
+            max-height: 320px;
+            overflow-y: auto;
+            margin-top: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .detection-item {
+            background: rgba(0,210,255,0.06);
+            border-left: 4px solid #00d2ff;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: 0.1s;
+        }
+        .badge-custom {
+            padding: 5px 12px;
+            border-radius: 30px;
+            margin-right: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-drone { background: #3498db; }
+        .badge-multi { background: #e67e22; }
+        .badge-confidence { background: #00a8cc; }
+        .badge-position { background: #9b59b6; }
+        .badge-direction { background: #c0392b; }
+        .online { color: #00ff00; font-weight: 600; }
+        .offline { color: #ff3333; font-weight: 600; }
+
+        .detection-visuals {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+            gap: 18px;
+            margin-top: 22px;
+        }
+        .visual-card {
+            min-width: 0;
+            overflow: hidden;
+            background: rgba(8, 12, 22, 0.88);
+            border: 1px solid rgba(0, 210, 255, 0.32);
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+        .visual-card h5 {
+            margin: 0;
+            padding: 13px 16px;
+            color: #d7f8ff;
+            font-size: 0.95rem;
+            letter-spacing: 0.08em;
+            background: rgba(0, 210, 255, 0.07);
+            border-bottom: 1px solid rgba(0, 210, 255, 0.18);
+        }
+        #scene-map {
+            display: block;
+            width: 100%;
+            height: 250px;
+        }
+        .capture-preview {
+            display: grid;
+            place-items: center;
+            min-height: 250px;
+            padding: 10px;
+            color: #9aa8b8;
+            text-align: center;
+            background: #080b11;
+        }
+        .capture-preview img {
+            display: none;
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        @media (max-width: 576px) {
+            #scene-map, .capture-preview { min-height: 210px; height: 210px; }
+        }
+
+        /* image upload section */
+        .upload-area {
+            border: 2px dashed #00d2ff;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            background: rgba(0,210,255,0.03);
+            cursor: pointer;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #3a7bd5;
+            background: rgba(0,210,255,0.08);
+        }
+        #detected-image {
+            max-width: 100%;
+            border-radius: 12px;
+            border: 2px solid #00d2ff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .loading-spinner {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .tab-btn {
+            background: rgba(255,255,255,0.06);
+            border: none;
+            color: #ccc;
+            padding: 10px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: 0.2s;
+            margin: 0 5px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+            color: white;
+            box-shadow: 0 0 20px rgba(0,210,255,0.3);
+        }
+        .hidden { display: none; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #00d2ff; border-radius: 10px; }
+    </style>
+</head>
+<body>
+<div class="container-main">
+
+    <!-- ========== HEADER ========== -->
+    <div class="header">
+        <h1>🛩️ UAV Target Detection • Center Marking</h1>
+        <div class="subtitle">Real‑time camera & image upload – drones / multicopters with direction guidance</div>
+        <div class="mt-3 d-flex justify-content-center gap-4">
+            <span id="camera-status" class="offline">● Camera Offline</span>
+            <span id="model-status">Model: checking...</span>
+        </div>
+    </div>
+
+    <!-- ========== MODE TABS ========== -->
+    <div class="flex-center gap-3 mb-4">
+        <button id="tab-live" class="tab-btn active" onclick="switchMode('live')">🎥 Live Camera</button>
+        <button id="tab-upload" class="tab-btn" onclick="switchMode('upload')">📤 Image Upload</button>
+        <a class="tab-btn" href="/video">🎞️ Video Upload</a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- LIVE CAMERA SECTION                                           -->
+    <!-- ============================================================ -->
+    <div id="live-section">
+        <!-- Video feed -->
+        <div class="video-container">
+            <img id="video-feed" src="" alt="Live Camera Feed">
+            <div class="video-status" id="video-status">CAMERA OFFLINE</div>
+            <div class="video-bottom" id="target-status">🎯 Waiting for target...</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button id="start-btn" class="btn btn-custom btn-start">▶️ Start Camera</button>
+            <button id="stop-btn" class="btn btn-custom btn-stop" disabled>⏹️ Stop Camera</button>
+            <button id="capture-btn" class="btn btn-custom btn-secondary">📸 Capture Frame</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card"><div class="stat-number" id="total">0</div><div class="stat-label">🎯 Targets</div></div>
+            <div class="stat-card"><div class="stat-number" id="fps">0</div><div class="stat-label">⚡ FPS</div></div>
+            <div class="stat-card"><div class="stat-number" id="confidence">0.50</div><div class="stat-label">🎯 Confidence</div></div>
+            <div class="stat-card"><div class="stat-number" id="target-type">---</div><div class="stat-label">UAV Type</div></div>
+        </div>
+
+        <!-- Live 3D-style scene map and the latest annotated detection frame -->
+        <div class="detection-visuals">
+            <section class="visual-card">
+                <h5>◈ LIVE DETECTION MAP (2D) <span id="scene-state" class="float-end">WAITING</span></h5>
+                <canvas id="scene-map" aria-label="3D scene map showing drone detections"></canvas>
+            </section>
+            <section class="visual-card">
+                <h5>▣ LATEST DETECTION IMAGE</h5>
+                <div class="capture-preview">
+                    <span id="capture-placeholder">The annotated image will appear automatically when a drone is detected.</span>
+                    <img id="capture-preview-image" alt="Latest captured drone detection">
+                </div>
+            </section>
+        </div>
+
+        <!-- Settings row -->
+        <div class="row g-4 mt-2">
+            <div class="col-md-7">
+                <div class="settings">
+                    <h5>⚙️ Detection Settings</h5>
+                    <label class="mt-2">Confidence: <span id="confidence-label">0.50</span></label>
+                    <input type="range" id="confidence-slider" min="0.10" max="0.90" step="0.05" value="0.50" class="form-range">
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="show-center" checked>
+                        <label class="form-check-label" for="show-center">Show Target Center</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="show-crosshair" checked>
+                        <label class="form-check-label" for="show-crosshair">Show Screen Crosshair</label>
+                    </div>
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="checkbox" id="hide-edges">
+                        <label class="form-check-label" for="hide-edges">Ignore detections touching frame edges (6%)</label>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-sm-6"><label class="small">Calibrated focal length (px)</label><input id="focal-length" class="form-control bg-dark text-white" type="number" min="0" step="1" placeholder="optional"></div>
+                        <div class="col-sm-6"><label class="small">Drone real width (m)</label><input id="drone-width" class="form-control bg-dark text-white" type="number" min="0" step="0.01" placeholder="optional"></div>
+                    </div>
+                    <div class="small text-muted mt-2">Calibrate with a known object: focal px = observed width px × known distance m ÷ real width m. Drone range = focal px × drone width m ÷ detected box width px.</div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="settings">
+                    <h5>📷 Camera Source</h5>
+                    <select id="camera-source" class="form-select bg-dark text-white border-secondary">
+                        <option value="0">Webcam 0 (default)</option>
+                        <option value="1">Webcam 1</option>
+                        <option value="http://192.168.1.100:8080/video">IP Camera (example)</option>
+                    </select>
+                    <div class="mt-3 small text-muted">For built‑in webcam use source 0.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live detections -->
+        <div class="mt-4">
+            <h5>📊 Live Target Information</h5>
+            <div class="detection-list" id="detection-list">
+                <div class="text-muted text-center">Waiting for camera...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- IMAGE UPLOAD SECTION                                         -->
+    <!-- ============================================================ -->
+    <div id="upload-section" class="hidden">
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="upload-area" id="drop-area">
+                    <div style="font-size: 3.5rem;">📤</div>
+                    <h4 class="mt-2">Drag & Drop Image</h4>
+                    <p class="text-muted">or click to browse</p>
+                    <input type="file" id="file-input" accept="image/*" style="display: none;">
+                    <button class="btn btn-custom btn-start" onclick="document.getElementById('file-input').click()">Choose Image</button>
+                    <div class="settings-row mt-3 d-flex flex-wrap justify-content-center gap-3">
+                        <div style="min-width:200px;">
+                            <label>Confidence: <span id="upload-conf-label">0.50</span></label>
+                            <input type="range" id="upload-conf-slider" min="0.1" max="0.9" step="0.05" value="0.5" class="form-range">
+                        </div>
+                        <label><input type="checkbox" id="upload-show-center" checked> Center</label>
+                        <label><input type="checkbox" id="upload-show-crosshair" checked> Crosshair</label>
+                        <label><input type="checkbox" id="upload-hide-edges"> Ignore frame edges</label>
+                    </div>
+                </div>
+                <div class="loading-spinner" id="upload-loading">
+                    <div class="spinner-border text-info" role="status"></div>
+                    <p class="mt-2">Processing image...</p>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div id="upload-result-container">
+                    <div class="text-center text-muted p-5">Uploaded image with detections will appear here</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ============================================================
+    //  CONFIG & GLOBALS
+    // ============================================================
+    const API_URL = window.location.origin; // works if served from same flask
+    // fallback: if page opened as file, use localhost:5000
+    const BASE = API_URL.includes('http') ? API_URL : 'http://localhost:5000';
+
+    // Live elements
+    const videoFeed = document.getElementById('video-feed');
+    const startBtn = document.getElementById('start-btn');
+    const stopBtn = document.getElementById('stop-btn');
+    const captureBtn = document.getElementById('capture-btn');
+    const cameraStatus = document.getElementById('camera-status');
+    const modelStatus = document.getElementById('model-status');
+    const videoStatus = document.getElementById('video-status');
+    const targetStatus = document.getElementById('target-status');
+    const totalElement = document.getElementById('total');
+    const fpsElement = document.getElementById('fps');
+    const confidenceElement = document.getElementById('confidence');
+    const targetTypeElement = document.getElementById('target-type');
+    const confidenceSlider = document.getElementById('confidence-slider');
+    const confidenceLabel = document.getElementById('confidence-label');
+    const showCenter = document.getElementById('show-center');
+    const showCrosshair = document.getElementById('show-crosshair');
+    const hideEdges = document.getElementById('hide-edges');
+    const focalLength = document.getElementById('focal-length');
+    const droneWidth = document.getElementById('drone-width');
+    const cameraSource = document.getElementById('camera-source');
+    const detectionList = document.getElementById('detection-list');
+
+    // Upload elements
+    const fileInput = document.getElementById('file-input');
+    const dropArea = document.getElementById('drop-area');
+    const uploadLoading = document.getElementById('upload-loading');
+    const uploadResultContainer = document.getElementById('upload-result-container');
+    const uploadConfSlider = document.getElementById('upload-conf-slider');
+    const uploadConfLabel = document.getElementById('upload-conf-label');
+    const uploadShowCenter = document.getElementById('upload-show-center');
+    const uploadShowCrosshair = document.getElementById('upload-show-crosshair');
+    const uploadHideEdges = document.getElementById('upload-hide-edges');
+
+    // Mode switching
+    const liveSection = document.getElementById('live-section');
+    const uploadSection = document.getElementById('upload-section');
+    const tabLive = document.getElementById('tab-live');
+    const tabUpload = document.getElementById('tab-upload');
+
+    let statusInterval = null;
+    let hadLiveDetection = false;
+    let captureInProgress = false;
+
+    const sceneCanvas = document.getElementById('scene-map');
+    const sceneState = document.getElementById('scene-state');
+    const capturePreviewImage = document.getElementById('capture-preview-image');
+    const capturePlaceholder = document.getElementById('capture-placeholder');
+
+    function drawDrone3D(ctx, x, y, size, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath(); ctx.ellipse(1, size * 0.45, size * 1.1, size * 0.48, 0, 0, Math.PI * 2); ctx.fill();
+        const rotors = [[-size, -size * 0.58], [size, -size * 0.58], [-size, size * 0.58], [size, size * 0.58]];
+        ctx.lineCap = 'round';
+        rotors.forEach(([mx, my]) => {
+            ctx.strokeStyle = '#26383d'; ctx.lineWidth = size * 0.32;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(mx, my); ctx.stroke();
+            ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.5, size * 0.13);
+            ctx.beginPath(); ctx.moveTo(0, -1); ctx.lineTo(mx, my - 1); ctx.stroke();
+            ctx.fillStyle = '#142027'; ctx.beginPath(); ctx.ellipse(mx, my, size * 0.38, size * 0.22, -0.3, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#c7d4d8'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.ellipse(mx, my, size * 0.58, size * 0.16, -0.3, 0, Math.PI * 2); ctx.stroke();
+        });
+        ctx.beginPath(); ctx.moveTo(0, -size * 0.48); ctx.lineTo(size * 0.43, 0);
+        ctx.lineTo(0, size * 0.48); ctx.lineTo(-size * 0.43, 0); ctx.closePath();
+        ctx.fillStyle = '#1c3338'; ctx.fill(); ctx.strokeStyle = '#d5e2df'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, -size * 0.48); ctx.lineTo(size * 0.43, 0);
+        ctx.lineTo(0, size * 0.18); ctx.lineTo(-size * 0.43, 0); ctx.closePath();
+        ctx.fillStyle = color; ctx.fill();
+        ctx.fillStyle = '#e9f4f2'; ctx.beginPath(); ctx.arc(0, -size * 0.13, Math.max(1.4, size * 0.12), 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
+
+    function getRelativeRange(detection, frameWidth) {
+        const sizeRatio = Math.max(detection.width, detection.height) / frameWidth;
+        if (sizeRatio < 0.055) return 'FAR~';
+        if (sizeRatio < 0.14) return 'MID~';
+        return 'NEAR~';
+    }
+
+    function drawSceneMap(detections = [], frameSize = { width: 640, height: 480 }, canvas = sceneCanvas, state = sceneState) {
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = Math.round(rect.width * ratio);
+        canvas.height = Math.round(rect.height * ratio);
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        const width = rect.width;
+        const height = rect.height;
+        const background = ctx.createLinearGradient(0, 0, 0, height);
+        background.addColorStop(0, '#11151c');
+        background.addColorStop(1, '#05070b');
+        ctx.fillStyle = background;
+        ctx.fillRect(0, 0, width, height);
+        const topLeft = [width * 0.22, height * 0.08], topRight = [width * 0.78, height * 0.08];
+        const bottomLeft = [width * 0.03, height * 0.96], bottomRight = [width * 0.97, height * 0.96];
+        const floorPoint = (u, v) => {
+            const lx = topLeft[0] + (bottomLeft[0] - topLeft[0]) * v;
+            const rx = topRight[0] + (bottomRight[0] - topRight[0]) * v;
+            return [lx + (rx - lx) * u, topLeft[1] + (bottomLeft[1] - topLeft[1]) * v];
+        };
+
+        ctx.strokeStyle = 'rgba(185, 199, 215, 0.22)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= 6; i++) {
+            const u = i / 6;
+            const start = floorPoint(u, 0);
+            const end = floorPoint(u, 1);
+            ctx.beginPath(); ctx.moveTo(...start); ctx.lineTo(...end); ctx.stroke();
+        }
+        for (let i = 0; i <= 6; i++) {
+            const v = i / 6;
+            const start = floorPoint(0, v);
+            const end = floorPoint(1, v);
+            ctx.beginPath(); ctx.moveTo(...start); ctx.lineTo(...end); ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(225, 234, 245, 0.45)';
+        ctx.beginPath(); ctx.moveTo(...topLeft); ctx.lineTo(...topRight); ctx.lineTo(...bottomRight);
+        ctx.lineTo(...bottomLeft); ctx.closePath(); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...floorPoint(0.5, 0)); ctx.lineTo(...floorPoint(0.5, 1)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...floorPoint(0, 0.5)); ctx.lineTo(...floorPoint(1, 0.5)); ctx.stroke();
+        const viewOrigin = floorPoint(0.5, 0.88);
+        ctx.fillStyle = '#ffe36e';
+        ctx.beginPath(); ctx.arc(viewOrigin[0], viewOrigin[1], 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '8px system-ui, sans-serif'; ctx.fillText('CAM', viewOrigin[0] + 5, viewOrigin[1] + 3);
+
+        ctx.fillStyle = '#d0d7e0';
+        ctx.font = '10px system-ui, sans-serif';
+        ctx.fillText(`3D-STYLE TARGET MAP · ${frameSize?.width || 640}×${frameSize?.height || 480}`, 14, 17);
+        ctx.fillStyle = '#8793a3';
+        ctx.textAlign = 'right';
+        ctx.fillText('3D-STYLE PROJECTION · DEPTH APPROX', width - 12, height - 22);
+        ctx.textAlign = 'left';
+        if (!detections.length) {
+            state.textContent = 'NO TARGET';
+            ctx.fillStyle = '#aab5c0'; ctx.font = '10px system-ui, sans-serif';
+            ctx.fillText('No detections in current frame', 14, height - 8);
+            return;
+        }
+
+        state.textContent = `${detections.length} TARGET${detections.length === 1 ? '' : 'S'}`;
+        const frameWidth = frameSize?.width || 640;
+        const frameHeight = frameSize?.height || 480;
+        const colors = ['#30e8ff', '#ff5fd2', '#73ff5a', '#ffc857', '#a98bff'];
+        const best = [...detections].sort((a, b) => b.confidence - a.confidence)[0];
+        const bestCenter = best.smooth_center || best.center;
+        const imageOffset = Math.round(Math.hypot(bestCenter[0] - frameWidth / 2, bestCenter[1] - frameHeight / 2));
+        ctx.fillStyle = '#aab5c0'; ctx.font = '10px system-ui, sans-serif';
+        ctx.fillText(`BEST: ${best.estimated_distance_m != null ? `${best.estimated_distance_m} m` : `${getRelativeRange(best, frameWidth)} (approx)`} · OFFSET: ${imageOffset}px`, 14, height - 8);
+        detections.forEach((detection, index) => {
+            const markerCenter = detection.smooth_center || detection.center;
+            const [x, y] = floorPoint(
+                Math.max(0, Math.min(1, markerCenter[0] / frameWidth)),
+                Math.max(0, Math.min(1, markerCenter[1] / frameHeight))
+            );
+            ctx.save(); ctx.strokeStyle = 'rgba(255, 227, 110, 0.75)'; ctx.setLineDash([3, 4]);
+            ctx.beginPath(); ctx.moveTo(viewOrigin[0], viewOrigin[1]); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
+            const startCenter = detection.track_start_center || detection.center;
+            const [startX, startY] = floorPoint(
+                Math.max(0, Math.min(1, startCenter[0] / frameWidth)),
+                Math.max(0, Math.min(1, startCenter[1] / frameHeight))
+            );
+            ctx.save(); ctx.strokeStyle = 'rgba(120, 215, 255, 0.8)'; ctx.setLineDash([3, 3]);
+            ctx.beginPath(); ctx.moveTo(startX, startY); ctx.lineTo(x, y); ctx.stroke(); ctx.restore();
+            ctx.strokeStyle = '#78d7ff'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(startX, startY, 5, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = '#78d7ff'; ctx.font = '9px system-ui, sans-serif';
+            ctx.fillText('START', startX + 6, startY + 12);
+            const droneSize = Math.max(5, Math.min(15, 4 + (Math.max(detection.width, detection.height) / frameWidth) * 75));
+            drawDrone3D(ctx, x, y, droneSize, colors[index % colors.length]);
+            ctx.fillStyle = '#ffffff'; ctx.font = '9px system-ui, sans-serif';
+            const rangeText = detection.estimated_distance_m != null ? `${detection.estimated_distance_m}m` : getRelativeRange(detection, frameWidth);
+            ctx.fillText(`#${detection.track_id || index + 1} ${detection.class} ${(detection.confidence * 100).toFixed(0)}% ${rangeText} (${markerCenter[0]},${markerCenter[1]})`, x + 9, y - 8);
+        });
+    }
+
+    async function showCapturedFrame() {
+        if (captureInProgress) return;
+        captureInProgress = true;
+        try {
+            const response = await fetch(`${BASE}/capture_frame`, { method: 'POST' });
+            const data = await response.json();
+            if (data.success && data.url) {
+                capturePreviewImage.src = `${BASE}${data.url}?t=${Date.now()}`;
+                capturePreviewImage.style.display = 'block';
+                capturePlaceholder.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Could not capture the detected frame:', error);
+        } finally {
+            captureInProgress = false;
+        }
+    }
+
+    window.addEventListener('resize', () => drawSceneMap());
+
+    // ============================================================
+    //  MODE SWITCHING
+    // ============================================================
+    function switchMode(mode) {
+        if (mode === 'live') {
+            liveSection.classList.remove('hidden');
+            uploadSection.classList.add('hidden');
+            tabLive.classList.add('active');
+            tabUpload.classList.remove('active');
+            // refresh status polling
+            if (statusInterval) clearInterval(statusInterval);
+            statusInterval = setInterval(updateStatus, 400);
+        } else {
+            liveSection.classList.add('hidden');
+            uploadSection.classList.remove('hidden');
+            tabLive.classList.remove('active');
+            tabUpload.classList.add('active');
+            if (statusInterval) { clearInterval(statusInterval); statusInterval = null; }
+        }
+    }
+
+    // ============================================================
+    //  HEALTH CHECK
+    // ============================================================
+    async function checkHealth() {
+        try {
+            const res = await fetch(`${BASE}/health`);
+            const data = await res.json();
+            if (data.model_loaded) {
+                modelStatus.innerHTML = '✅ Model Online';
+                modelStatus.className = 'online';
+                console.log('Model classes:', data.model_names);
+            } else {
+                modelStatus.innerHTML = '❌ Model Offline';
+                modelStatus.className = 'offline';
+            }
+        } catch (e) {
+            modelStatus.innerHTML = '❌ Server Offline';
+            modelStatus.className = 'offline';
+        }
+    }
+
+    // ============================================================
+    //  LIVE CAMERA CONTROLS
+    // ============================================================
+    startBtn.addEventListener('click', async () => {
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Starting...';
+        try {
+            const res = await fetch(`${BASE}/start_camera`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source: cameraSource.value })
+            });
+            const data = await res.json();
+            if (!data.success) {
+                alert(data.message || 'Could not start camera');
+                startBtn.disabled = false;
+                startBtn.textContent = '▶️ Start Camera';
+                return;
+            }
+            startBtn.textContent = '✅ Camera Running';
+            stopBtn.disabled = false;
+            cameraStatus.innerHTML = '● Camera Online';
+            cameraStatus.className = 'online';
+            videoStatus.textContent = 'CAMERA ONLINE';
+            videoFeed.src = `${BASE}/camera_stream?t=${Date.now()}`;
+            updateDisplayOptions();
+            // start polling if not already
+            if (statusInterval) clearInterval(statusInterval);
+            statusInterval = setInterval(updateStatus, 400);
+        } catch (e) {
+            alert('Error: ' + e.message);
+            startBtn.disabled = false;
+            startBtn.textContent = '▶️ Start Camera';
+        }
+    });
+
+    stopBtn.addEventListener('click', async () => {
+        try { await fetch(`${BASE}/stop_camera`, { method: 'POST' }); } catch (e) {}
+        hadLiveDetection = false;
+        drawSceneMap();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶️ Start Camera';
+        stopBtn.disabled = true;
+        cameraStatus.innerHTML = '● Camera Offline';
+        cameraStatus.className = 'offline';
+        videoStatus.textContent = 'CAMERA OFFLINE';
+        targetStatus.textContent = '🎯 Waiting for target...';
+        totalElement.textContent = '0';
+        fpsElement.textContent = '0';
+        targetTypeElement.textContent = '---';
+        detectionList.innerHTML = '<div class="text-muted text-center">Camera stopped.</div>';
+        videoFeed.src = '';
+    });
+
+    captureBtn.addEventListener('click', async () => {
+        await showCapturedFrame();
+    });
+
+    // ============================================================
+    //  CONFIDENCE & DISPLAY OPTIONS (LIVE)
+    // ============================================================
+    confidenceSlider.addEventListener('input', async function() {
+        const val = parseFloat(this.value);
+        confidenceLabel.textContent = val.toFixed(2);
+        confidenceElement.textContent = val.toFixed(2);
+        try {
+            await fetch(`${BASE}/set_threshold`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ confidence: val })
+            });
+        } catch (e) {}
+    });
+
+    async function updateDisplayOptions() {
+        try {
+            await fetch(`${BASE}/set_display_options`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    show_center: showCenter.checked,
+                    show_crosshair: showCrosshair.checked
+                })
+            });
+        } catch (e) {}
+    }
+
+    showCenter.addEventListener('change', updateDisplayOptions);
+    showCrosshair.addEventListener('change', updateDisplayOptions);
+
+    async function updateDetectionOptions() {
+        try {
+            await fetch(`${BASE}/set_detection_options`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hide_edges: hideEdges.checked,
+                    focal_length_px: parseFloat(focalLength.value) || 0,
+                    target_width_m: parseFloat(droneWidth.value) || 0
+                })
+            });
+        } catch (error) { console.error(error); }
+    }
+    hideEdges.addEventListener('change', updateDetectionOptions);
+    focalLength.addEventListener('change', updateDetectionOptions);
+    droneWidth.addEventListener('change', updateDetectionOptions);
+
+    // ============================================================
+    //  STATUS POLLING
+    // ============================================================
+    async function updateStatus() {
+        try {
+            const res = await fetch(`${BASE}/camera_status`);
+            const data = await res.json();
+
+            totalElement.textContent = data.total_detections || 0;
+            fpsElement.textContent = data.fps || 0;
+
+            if (!data.active) return;
+
+            if (data.detections && data.detections.length > 0) {
+                drawSceneMap(data.detections, data.frame_size);
+                if (!hadLiveDetection) showCapturedFrame();
+                hadLiveDetection = true;
+                const target = [...data.detections].sort((a,b) => b.confidence - a.confidence)[0];
+                targetTypeElement.textContent = target.class;
+                const position = target.direction.position;
+                targetStatus.textContent = `🎯 ${target.class} | ${position}`;
+                renderDetections(data.detections, data.frame_size?.width || 640);
+            } else {
+                drawSceneMap();
+                hadLiveDetection = false;
+                targetTypeElement.textContent = '---';
+                targetStatus.textContent = '🎯 No UAV detected';
+                detectionList.innerHTML = '<div class="text-muted text-center">No target detected</div>';
+            }
+        } catch (e) { /* server may be restarting */ }
+    }
+
+    function renderDetections(detections, frameWidth = 640) {
+        detectionList.innerHTML = detections.map((d, idx) => {
+            const dir = d.direction;
+            let dirText = '';
+            if (dir.position === 'Inside') {
+                dirText = 'Target aligned';
+            } else {
+                if (dir.right > 0) dirText += `Right: ${dir.right.toFixed(2)} `;
+                if (dir.left > 0) dirText += `Left: ${dir.left.toFixed(2)} `;
+                if (dir.up > 0) dirText += `Up: ${dir.up.toFixed(2)} `;
+                if (dir.down > 0) dirText += `Down: ${dir.down.toFixed(2)}`;
+            }
+            const typeClass = d.class === 'Multicopter' ? 'badge-multi' : 'badge-drone';
+            return `<div class="detection-item">
+                <div class="mb-2">
+                    <span class="badge-custom ${typeClass}">${d.class} #${d.track_id || idx+1}</span>
+                    <span class="badge-custom badge-confidence">${(d.confidence*100).toFixed(1)}%</span>
+                    <span class="badge-custom badge-position">${dir.position}</span>
+                </div>
+                <div class="small">
+                    <b>Center:</b> (${d.center[0]}, ${d.center[1]}) &nbsp;|&nbsp;
+                    <b>Box:</b> ${d.width}×${d.height} &nbsp;|&nbsp;
+                    <b>Range:</b> ${d.estimated_distance_m != null ? `${d.estimated_distance_m} m (estimate)` : `${getRelativeRange(d, frameWidth)} (approx)`}
+                </div>
+                <div class="mt-2"><span class="badge-custom badge-direction">${dirText || '—'}</span></div>
+            </div>`;
+        }).join('');
+    }
+
+    // ============================================================
+    //  IMAGE UPLOAD HANDLING
+    // ============================================================
+    uploadConfSlider.addEventListener('input', function() {
+        uploadConfLabel.textContent = parseFloat(this.value).toFixed(2);
+    });
+
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) uploadImage(this.files[0]);
+    });
+
+    dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+    dropArea.addEventListener('dragleave', e => { e.preventDefault(); dropArea.classList.remove('dragover'); });
+    dropArea.addEventListener('drop', e => {
+        e.preventDefault();
+        dropArea.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) uploadImage(e.dataTransfer.files[0]);
+    });
+    // avoid double click on button
+    dropArea.addEventListener('click', e => {
+        if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') fileInput.click();
+    });
+
+    async function uploadImage(file) {
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please upload a valid image (JPEG, PNG, WEBP, BMP)');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('confidence', uploadConfSlider.value);
+        formData.append('show_center', uploadShowCenter.checked);
+        formData.append('show_crosshair', uploadShowCrosshair.checked);
+        formData.append('hide_edges', uploadHideEdges.checked);
+        formData.append('focal_length_px', focalLength.value || '0');
+        formData.append('target_width_m', droneWidth.value || '0');
+
+        uploadLoading.style.display = 'block';
+        uploadResultContainer.innerHTML = '';
+
+        try {
+            const res = await fetch(`${BASE}/detect`, { method: 'POST', body: formData });
+            const data = await res.json();
+            uploadLoading.style.display = 'none';
+            displayUploadResults(data);
+        } catch (e) {
+            uploadLoading.style.display = 'none';
+            uploadResultContainer.innerHTML = `<div class="alert alert-danger">Error: ${e.message}</div>`;
+        }
+    }
+
+    function displayUploadResults(data) {
+        if (!data.success) {
+            uploadResultContainer.innerHTML = `<div class="alert alert-danger">Error: ${data.error || 'Unknown'}</div>`;
+            return;
+        }
+        const detections = data.data.detections;
+        const total = data.data.total_detections;
+        const imageBase64 = data.data.image_base64;
+        const imageWidth = data.data.image_size?.width || 640;
+
+        let listHtml = '';
+        if (total > 0) {
+            listHtml = detections.map((d, i) => `
+                <div class="detection-item">
+                    <div>
+                        <span class="badge-custom badge-drone">🛩️ ${d.class} #${d.track_id || i+1}</span>
+                        <span class="badge-custom badge-confidence">${(d.confidence*100).toFixed(1)}%</span>
+                        <span class="badge-custom badge-position">🎯 (${d.center[0]}, ${d.center[1]})</span>
+                        <span class="badge-custom badge-direction" style="background:#9b59b6;">${d.width}×${d.height}</span>
+                        <span class="badge-custom badge-position">${d.estimated_distance_m != null ? `${d.estimated_distance_m} m estimate` : `${getRelativeRange(d, imageWidth)} (approx)`}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            listHtml = '<div class="text-muted text-center">No drones detected</div>';
+        }
+
+        uploadResultContainer.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-7">
+                    ${imageBase64 ? `<img id="detected-image" src="data:image/jpeg;base64,${imageBase64}" alt="Detection Result">` : ''}
+                </div>
+                <div class="col-md-5">
+                    <div class="stats-card mb-3" style="background: linear-gradient(135deg,#00d2ff,#3a7bd5); padding:16px; border-radius:16px; text-align:center;">
+                        <div style="font-size:2.5rem; font-weight:bold;">${total}</div>
+                        <div>Drones Detected</div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 16px; max-height: 260px; overflow-y: auto;">
+                        ${listHtml}
+                    </div>
+                    <hr>
+                    <small class="text-muted">
+                        Confidence threshold: ${(data.metadata.confidence_threshold*100).toFixed(0)}%<br>
+                        Model: ${data.metadata.model}<br>
+                        Time: ${new Date(data.metadata.timestamp).toLocaleString()}
+                    </small>
+                </div>
+            </div>
+            <div class="visual-card mt-3">
+                <h5>DETECTION MAP <span id="upload-scene-state" class="float-end">${total} TARGET${total === 1 ? '' : 'S'}</span></h5>
+                <canvas id="upload-scene-map" style="display:block;width:100%;height:250px" aria-label="Uploaded-image detection map"></canvas>
+            </div>
+        `;
+        drawSceneMap(detections, data.data.image_size, document.getElementById('upload-scene-map'), document.getElementById('upload-scene-state'));
+    }
+
+    // ============================================================
+    //  INITIALISATION
+    // ============================================================
+    checkHealth();
+    updateDisplayOptions();
+    drawSceneMap();
+    // start polling only if live tab active
+    if (!liveSection.classList.contains('hidden')) {
+        statusInterval = setInterval(updateStatus, 400);
+    }
+    // set default video feed placeholder
+    videoFeed.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'640\' height=\'360\' viewBox=\'0 0 640 360\'%3E%3Crect width=\'640\' height=\'360\' fill=\'%23111\'/%3E%3Ctext x=\'320\' y=\'180\' font-family=\'Arial\' font-size=\'20\' fill=\'%2300d2ff\' text-anchor=\'middle\'%3ECamera Offline%3C/text%3E%3C/svg%3E';
+</script>
+
+</body>
+</html>
