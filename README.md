@@ -6,6 +6,9 @@ A Flask and Ultralytics YOLO application for detecting multicopters/drones from 
 
 ## Demo media
 
+
+<img width="339" height="278" alt="image" src="https://github.com/user-attachments/assets/dc18487a-c25c-406a-afe2-115b0028557d" />
+
 <div align="center">
 <img src="capture_20261016_162131_180.jpg" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
 
