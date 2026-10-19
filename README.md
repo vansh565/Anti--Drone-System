@@ -5,10 +5,11 @@ A Flask and Ultralytics YOLO application for detecting multicopters/drones from 
 > **Scope:** This project detects and visualizes objects. The inspected app does not send commands to a drone or provide flight control. Its map is a perspective-styled visualization of camera-image coordinates, not a measured 3D reconstruction. A single ordinary camera cannot determine true depth without calibration or another depth source.
 
 
+
 ## Demo media
 
 <div align="center">
-<img src="capture_20261016_162131_180.jpg" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
+<img src="https://github.com/user-attachments/assets/26d7f8db-85cc-407d-8ff2-779770d07e07" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
 
 <video controls width="1100" height="1200" style="max-width: 100%; object-fit: contain;">
     <source src="https://github.com/user-attachments/assets/af62a64d-27af-460f-b574-3bbdf03a1fba" type="video/mp4">
