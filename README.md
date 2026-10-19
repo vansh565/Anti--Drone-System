@@ -11,10 +11,11 @@ A Flask and Ultralytics YOLO application for detecting multicopters/drones from 
 <div align="center">
 <img src="https://github.com/user-attachments/assets/26d7f8db-85cc-407d-8ff2-779770d07e07" alt="Multicopter detection sample" width="1000" style="max-width: 100%; height: auto;">
 
-<video controls width="1100" height="1200" style="max-width: 100%; object-fit: contain;">
-    <source src="https://github.com/user-attachments/assets/af62a64d-27af-460f-b574-3bbdf03a1fba" type="video/mp4">
-    Your browser does not support MP4 video playback. [Play or download the sample video](Recording%202026-10-19%20181230.mp4).
-</video>
+## Project Demo
+
+[![Watch Project Demo](images/demo-thumbnail.png)](https://github.com/user-attachments/assets/af62a64d-27af-460f-b574-3bbdf03a1fba)
+
+**Click the thumbnail to watch the demo.**
 </div>
 
 The fullscreen icon is provided by your browser's video controls. Some Markdown previews block fullscreen; use a browser/viewer that permits fullscreen video.
