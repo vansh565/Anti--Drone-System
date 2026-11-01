@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="350" viewBox="0 0 1280 350" role="img" aria-label="Animated offline training pipeline from datasets to the deployed best.pt checkpoint">
+  <title>Offline training pipeline</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070d1a"/>
+      <stop offset="1" stop-color="#0f1a33"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#17233f" stroke-width="1"/>
+    </pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <path id="rail" d="M40 300 H1240"/>
+    <style>
+      .t { font-family: 'Segoe UI', Inter, Helvetica, Arial, sans-serif; }
+      .m { font-family: Consolas, Menlo, 'Courier New', monospace; }
+      .h { font-size: 15px; font-weight: 700; fill: #e2e8f0; }
+      .s { font-size: 11.5px; fill: #94a3b8; }
+      .n { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+      .flow { fill: none; stroke-width: 2; stroke-dasharray: 6 8; animation: dash 0.9s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -14; } }
+      .card { animation: lit 9s ease-in-out infinite; }
+      .k1 { animation-delay: 0s; } .k2 { animation-delay: 1.5s; } .k3 { animation-delay: 3s; }
+      .k4 { animation-delay: 4.5s; } .k5 { animation-delay: 6s; } .k6 { animation-delay: 7.5s; }
+      @keyframes lit { 0%, 18%, 100% { stroke-opacity: 0.45; } 7% { stroke-opacity: 1; } }
+      .bar { transform-box: fill-box; transform-origin: left; animation: grow 9s ease-out infinite; animation-delay: 6s; transform: scaleX(0); }
+      @keyframes grow { 0% { transform: scaleX(0); } 12%, 92% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+    </style>
+  </defs>
+
+  <rect width="1280" height="350" rx="18" fill="url(#bg)"/>
+  <rect width="1280" height="350" rx="18" fill="url(#grid)" opacity="0.6"/>
+
+  <text class="t" x="30" y="42" font-size="20" font-weight="800" fill="#e2e8f0">Offline training pipeline</text>
+  <text class="m" x="290" y="42" font-size="13" fill="#64748b">separate from the web app · produces the checkpoint loaded by 2.py</text>
+
+  <!-- connectors -->
+  <g>
+    <path class="flow" stroke="#475569" d="M210 175 H238" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#475569" d="M418 175 H446" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#475569" d="M626 175 H654" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#475569" d="M834 175 H862" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#475569" d="M1042 175 H1070" marker-end="url(#arrow)"/>
+  </g>
+
+  <g class="t">
+    <!-- 1 sources -->
+    <rect class="card k1" x="30" y="70" width="180" height="210" rx="12" fill="#0b1b2b" stroke="#22d3ee" stroke-width="1.8"/>
+    <text class="n" x="46" y="94" fill="#22d3ee">01 · SOURCES</text>
+    <text class="h" x="46" y="118">Raw drone imagery</text>
+    <g class="m s">
+      <text x="46" y="142">VisioDECT:</text>
+      <text x="56" y="160">Anafi-Extended</text>
+      <text x="56" y="176">DJI FPV · Phantom</text>
+      <text x="56" y="192">EFT-E410S</text>
+      <text x="56" y="208">Mavic Air / Enterprise</text>
+      <text x="46" y="232">Roboflow</text>
+      <text x="56" y="250">octacopter1 v6</text>
+    </g>
+
+    <!-- 2 prep -->
+    <rect class="card k2" x="238" y="70" width="180" height="210" rx="12" fill="#151230" stroke="#a78bfa" stroke-width="1.8"/>
+    <text class="n" x="254" y="94" fill="#a78bfa">02 · PREPARE</text>
+    <text class="h" x="254" y="118">Merge &amp; convert</text>
+    <g class="m s">
+      <text x="254" y="146">pair image ↔ label</text>
+      <text x="254" y="166">convert to YOLO txt</text>
+      <text x="254" y="186">single class id 0</text>
+      <text x="254" y="206">split train/val/test</text>
+      <text x="254" y="226">write data.yaml</text>
+      <text x="254" y="256" fill="#c4b5fd">archive/1.py utility</text>
+    </g>
+
+    <!-- 3 dataset -->
+    <rect class="card k3" x="446" y="70" width="180" height="210" rx="12" fill="#0c1f1a" stroke="#34d399" stroke-width="1.8"/>
+    <text class="n" x="462" y="94" fill="#34d399">03 · DATASET</text>
+    <text class="h" x="462" y="118">combined_dataset</text>
+    <g class="m s">
+      <text x="462" y="142">nc: 1 · multicopter</text>
+      <text x="462" y="172">train</text><text x="610" y="172" text-anchor="end" fill="#6ee7b7">25,617</text>
+      <text x="462" y="194">valid</text><text x="610" y="194" text-anchor="end" fill="#6ee7b7">7,293</text>
+      <text x="462" y="216">test</text><text x="610" y="216" text-anchor="end" fill="#6ee7b7">3,652</text>
+      <line x1="462" y1="228" x2="610" y2="228" stroke="#1f6f57"/>
+      <text x="462" y="248">images</text><text x="610" y="248" text-anchor="end" fill="#a7f3d0">36,562</text>
+    </g>
+
+    <!-- 4 train -->
+    <rect class="card k4" x="654" y="70" width="180" height="210" rx="12" fill="#2a1c06" stroke="#f59e0b" stroke-width="1.8"/>
+    <text class="n" x="670" y="94" fill="#fbbf24">04 · TRAIN</text>
+    <text class="h" x="670" y="118">Ultralytics YOLO</text>
+    <g class="m s">
+      <text x="670" y="146">base   yolo11l.pt</text>
+      <text x="670" y="166">imgsz  1024</text>
+      <text x="670" y="186">batch  8</text>
+      <text x="670" y="206">epochs 100 (cfg)</text>
+      <text x="670" y="226">device GPU 0</text>
+      <text x="670" y="256" fill="#fcd34d">runs/combined_yolo11l_1024</text>
+    </g>
+    <!-- spinning epoch ring -->
+    <g transform="translate(806 98)">
+      <circle r="12" fill="none" stroke="#3b2706" stroke-width="4"/>
+      <circle r="12" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="20 56" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1.4s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- 5 checkpoint + metrics -->
+    <rect class="card k5" x="862" y="70" width="180" height="210" rx="12" fill="#22101f" stroke="#f472b6" stroke-width="1.8"/>
+    <text class="n" x="878" y="94" fill="#f472b6">05 · VALIDATE</text>
+    <text class="h" x="878" y="118">best.pt @ epoch 32</text>
+    <g class="m" font-size="11" fill="#94a3b8">
+      <text x="878" y="146">Precision</text><text x="1026" y="146" text-anchor="end" fill="#f9a8d4">0.965</text>
+      <rect x="878" y="151" width="148" height="5" rx="2.5" fill="#3b1530"/><rect class="bar" x="878" y="151" width="142.8" height="5" rx="2.5" fill="#f472b6"/>
+      <text x="878" y="176">Recall</text><text x="1026" y="176" text-anchor="end" fill="#f9a8d4">0.675</text>
+      <rect x="878" y="181" width="148" height="5" rx="2.5" fill="#3b1530"/><rect class="bar" x="878" y="181" width="99.8" height="5" rx="2.5" fill="#f472b6"/>
+      <text x="878" y="206">mAP50</text><text x="1026" y="206" text-anchor="end" fill="#f9a8d4">0.717</text>
+      <rect x="878" y="211" width="148" height="5" rx="2.5" fill="#3b1530"/><rect class="bar" x="878" y="211" width="106.2" height="5" rx="2.5" fill="#f472b6"/>
+      <text x="878" y="236">mAP50-95</text><text x="1026" y="236" text-anchor="end" fill="#f9a8d4">0.504</text>
+      <rect x="878" y="241" width="148" height="5" rx="2.5" fill="#3b1530"/><rect class="bar" x="878" y="241" width="74.6" height="5" rx="2.5" fill="#f472b6"/>
+      <text x="878" y="266" font-size="10" fill="#64748b">val split · 59 epochs logged</text>
+    </g>
+
+    <!-- 6 deploy -->
+    <rect class="card k6" x="1070" y="70" width="180" height="210" rx="12" fill="#121a2e" stroke="#e2e8f0" stroke-width="1.8"/>
+    <text class="n" x="1086" y="94" fill="#e2e8f0">06 · DEPLOY</text>
+    <text class="h" x="1086" y="118">Serve in 2.py</text>
+    <g class="m s">
+      <text x="1086" y="146">MODEL_PATH =</text>
+      <text x="1086" y="164" fill="#cbd5e1">…/weights/best.pt</text>
+      <text x="1086" y="190">YOLO(MODEL_PATH)</text>
+      <text x="1086" y="208">once at startup</text>
+      <text x="1086" y="234">→ /detect</text>
+      <text x="1086" y="250">→ /camera_stream</text>
+      <text x="1086" y="266">→ video worker</text>
+    </g>
+  </g>
+
+  <!-- data packet riding the rail -->
+  <line x1="40" y1="300" x2="1240" y2="300" stroke="#1e2b4a" stroke-width="2" stroke-dasharray="2 6"/>
+  <g filter="url(#glow)">
+    <rect x="-7" y="-7" width="14" height="14" rx="3" fill="#22d3ee">
+      <animateMotion dur="9s" repeatCount="indefinite"><mpath href="#rail"/></animateMotion>
+      <animate attributeName="fill" values="#22d3ee;#a78bfa;#34d399;#fbbf24;#f472b6;#e2e8f0" dur="9s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <text class="t" x="640" y="334" text-anchor="middle" font-size="12" fill="#64748b">Metrics read from runs/combined_yolo11l_1024/results.csv (epoch with the highest mAP50-95 on the validation split).</text>
+</svg>

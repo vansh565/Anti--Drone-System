@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="Multicopter Drone Detection: YOLO11l, Flask and OpenCV">
+  <title>Multicopter Drone Detection</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070d1a"/>
+      <stop offset="0.55" stop-color="#0d1730"/>
+      <stop offset="1" stop-color="#101a36"/>
+    </linearGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.5" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#f472b6"/>
+    </linearGradient>
+    <radialGradient id="sweep" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0 0) scale(120)">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#1e2b4a" stroke-width="1"/>
+    </pattern>
+    <clipPath id="typeClip">
+      <rect x="330" y="70" height="80" width="0">
+        <animate attributeName="width" values="0;580;580;580" keyTimes="0;0.35;0.9;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+    </clipPath>
+    <style>
+      .t { font-family: 'Segoe UI', Inter, Helvetica, Arial, sans-serif; }
+      .m { font-family: Consolas, Menlo, 'Courier New', monospace; }
+      .blink { animation: blink 1s steps(1) infinite; }
+      @keyframes blink { 50% { opacity: 0; } }
+      .chip { animation: fadeUp 8s ease-in-out infinite; opacity: 0; }
+      .c1 { animation-delay: 2.6s; } .c2 { animation-delay: 2.9s; } .c3 { animation-delay: 3.2s; }
+      .c4 { animation-delay: 3.5s; } .c5 { animation-delay: 3.8s; }
+      @keyframes fadeUp { 0% { opacity: 0; transform: translateY(8px); } 6%, 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+      .rotor { animation: spin 0.25s linear infinite; transform-box: fill-box; transform-origin: center; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .ping { animation: ping 2.4s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+      @keyframes ping { 0% { transform: scale(0.3); opacity: 0.9; } 100% { transform: scale(2.2); opacity: 0; } }
+    </style>
+  </defs>
+
+  <rect width="1200" height="320" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="18" fill="url(#grid)" opacity="0.55"/>
+
+  <!-- Radar scope with live target -->
+  <g transform="translate(170 160)">
+    <circle r="120" fill="#06101f" stroke="#1f3a5c" stroke-width="2"/>
+    <circle r="80" fill="none" stroke="#1f3a5c" stroke-dasharray="4 6"/>
+    <circle r="40" fill="none" stroke="#1f3a5c" stroke-dasharray="4 6"/>
+    <path d="M-120 0H120M0-120V120" stroke="#1f3a5c"/>
+    <g>
+      <path d="M0 0 L120 0 A120 120 0 0 0 84.85 -84.85 Z" fill="url(#sweep)"/>
+      <line x1="0" y1="0" x2="120" y2="0" stroke="#22d3ee" stroke-width="2"/>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite"/>
+    </g>
+    <!-- tracked target -->
+    <g>
+      <animateMotion dur="8s" repeatCount="indefinite" path="M-50 30 C-20 -40 30 -60 55 -20 C80 20 10 60 -50 30 Z"/>
+      <circle r="5" fill="#f472b6"/>
+      <circle r="5" fill="none" stroke="#f472b6" stroke-width="2" class="ping"/>
+      <rect x="-15" y="-15" width="30" height="30" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="6 3"/>
+    </g>
+    <text class="m" x="0" y="146" fill="#64748b" font-size="12" text-anchor="middle">IMAGE-PLANE TRACK</text>
+  </g>
+
+  <!-- Quadcopter flying inside a detection box -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 26 -10; 52 4; 20 12; 0 0" dur="6s" repeatCount="indefinite"/>
+    <g transform="translate(1050 160)">
+      <rect x="-62" y="-38" width="124" height="76" rx="3" fill="none" stroke="#34d399" stroke-width="2"/>
+      <rect x="-62" y="-58" width="124" height="20" fill="#34d399"/>
+      <text class="m" x="-56" y="-43" font-size="12" fill="#04130c" font-weight="700">multicopter 0.94</text>
+      <path d="M-40 -18 L40 18 M40 -18 L-40 18" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round"/>
+      <rect x="-12" y="-8" width="24" height="16" rx="4" fill="#e2e8f0"/>
+      <ellipse class="rotor" cx="-40" cy="-18" rx="18" ry="3" fill="#94a3b8" opacity="0.8"/>
+      <ellipse class="rotor" cx="40" cy="-18" rx="18" ry="3" fill="#94a3b8" opacity="0.8"/>
+      <ellipse class="rotor" cx="-40" cy="18" rx="18" ry="3" fill="#94a3b8" opacity="0.8"/>
+      <ellipse class="rotor" cx="40" cy="18" rx="18" ry="3" fill="#94a3b8" opacity="0.8"/>
+      <circle r="3" fill="#f472b6"/>
+    </g>
+  </g>
+
+  <!-- Typed title -->
+  <g clip-path="url(#typeClip)">
+    <text class="t" x="330" y="128" font-size="44" font-weight="800" fill="url(#title)" textLength="560" lengthAdjust="spacingAndGlyphs">MULTICOPTER DETECTION</text>
+  </g>
+  <rect class="blink" x="330" y="94" width="4" height="42" fill="#22d3ee">
+    <animate attributeName="x" values="330;896;896;896" keyTimes="0;0.35;0.9;1" dur="8s" repeatCount="indefinite"/>
+  </rect>
+
+  <text class="t" x="332" y="170" font-size="18" fill="#94a3b8">Real-time drone detection &amp; tracking · image · live camera · video</text>
+
+  <g class="t" font-size="14" font-weight="600">
+    <g class="chip c1"><rect x="332" y="200" width="104" height="30" rx="15" fill="#f59e0b22" stroke="#f59e0b"/><text x="384" y="220" text-anchor="middle" fill="#fbbf24">YOLO11l</text></g>
+    <g class="chip c2"><rect x="446" y="200" width="104" height="30" rx="15" fill="#a78bfa22" stroke="#a78bfa"/><text x="498" y="220" text-anchor="middle" fill="#c4b5fd">Flask API</text></g>
+    <g class="chip c3"><rect x="560" y="200" width="104" height="30" rx="15" fill="#22d3ee22" stroke="#22d3ee"/><text x="612" y="220" text-anchor="middle" fill="#67e8f9">OpenCV</text></g>
+    <g class="chip c4"><rect x="674" y="200" width="124" height="30" rx="15" fill="#34d39922" stroke="#34d399"/><text x="736" y="220" text-anchor="middle" fill="#6ee7b7">IoU Tracking</text></g>
+    <g class="chip c5"><rect x="808" y="200" width="144" height="30" rx="15" fill="#f472b622" stroke="#f472b6"/><text x="880" y="220" text-anchor="middle" fill="#f9a8d4">Pinhole Ranging</text></g>
+  </g>
+
+  <text class="m" x="332" y="270" font-size="13" fill="#64748b">model: runs/combined_yolo11l_1024/weights/best.pt  ·  imgsz 1024  ·  class: multicopter</text>
+</svg>

@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="660" viewBox="0 0 1280 660" role="img" aria-label="Animated runtime architecture: inputs, Flask backend, YOLO11l inference, post-processing and delivery">
+  <title>Runtime inference architecture of 2.py</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070d1a"/>
+      <stop offset="1" stop-color="#0f1a33"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b2706"/>
+      <stop offset="1" stop-color="#1a1204"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#fbbf24" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#17233f" stroke-width="1"/>
+    </pattern>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#64748b"/>
+    </marker>
+    <clipPath id="coreClip"><rect x="570" y="160" width="180" height="290" rx="14"/></clipPath>
+
+    <!-- Full route paths used by the moving packets -->
+    <path id="routeImg" d="M30 165 H510 C540 165 540 230 570 230 H660 V305 H750 C780 305 780 133 810 133 H910 V385 H1010 C1040 385 1040 165 1070 165 H1260"/>
+    <path id="routeCam" d="M30 305 H750 C780 305 780 133 810 133 H910 V469 H1010 C1040 469 1040 305 1070 305 H1260"/>
+    <path id="routeVid" d="M30 445 H510 C540 445 540 380 570 380 H660 V305 H750 C780 305 780 133 810 133 H910 V469 H1010 C1040 469 1040 445 1070 445 H1260"/>
+
+    <style>
+      .t { font-family: 'Segoe UI', Inter, Helvetica, Arial, sans-serif; }
+      .m { font-family: Consolas, Menlo, 'Courier New', monospace; }
+      .h { font-size: 15px; font-weight: 700; fill: #e2e8f0; }
+      .s { font-size: 11.5px; fill: #94a3b8; }
+      .lane { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; }
+      .flow { fill: none; stroke-width: 2; stroke-dasharray: 6 8; animation: dash 0.9s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -14; } }
+      .step { animation: step 5s ease-in-out infinite; }
+      .s1 { animation-delay: 0s; } .s2 { animation-delay: 1s; } .s3 { animation-delay: 2s; }
+      .s4 { animation-delay: 3s; } .s5 { animation-delay: 4s; }
+      @keyframes step { 0%, 22%, 100% { stroke: #1f6f57; } 8% { stroke: #6ee7b7; } }
+      .pulse { animation: pulse 2.2s ease-in-out infinite; }
+      @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+    </style>
+  </defs>
+
+  <rect width="1280" height="660" rx="18" fill="url(#bg)"/>
+  <rect width="1280" height="660" rx="18" fill="url(#grid)" opacity="0.6"/>
+
+  <text class="t" x="30" y="42" font-size="20" font-weight="800" fill="#e2e8f0">Runtime inference architecture</text>
+  <text class="m" x="352" y="42" font-size="13" fill="#64748b">2.py · Flask · Ultralytics YOLO · OpenCV</text>
+
+  <!-- Lane headers -->
+  <g class="t lane">
+    <text x="30" y="84" fill="#22d3ee">① CLIENT INPUT</text>
+    <text x="290" y="84" fill="#a78bfa">② FLASK BACKEND</text>
+    <text x="570" y="84" fill="#fbbf24">③ INFERENCE CORE</text>
+    <text x="810" y="84" fill="#34d399">④ POST-PROCESSING</text>
+    <text x="1070" y="84" fill="#f472b6">⑤ DELIVERY</text>
+  </g>
+
+  <!-- Connectors (animated dashes) -->
+  <g>
+    <path class="flow" stroke="#22d3ee" d="M230 165 H290" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#a78bfa" d="M230 305 H290" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#f472b6" d="M230 445 H290" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#22d3ee" d="M510 165 C540 165 540 230 570 230" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#a78bfa" d="M510 305 H570" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#f472b6" d="M510 445 C540 445 540 380 570 380" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#fbbf24" d="M750 305 C780 305 780 133 810 133" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#34d399" d="M910 166 V184" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#34d399" d="M910 250 V268" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#34d399" d="M910 334 V352" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#34d399" d="M910 418 V436" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#22d3ee" d="M1010 385 C1040 385 1040 165 1070 165" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#a78bfa" d="M1010 469 C1040 469 1040 305 1070 305" marker-end="url(#arrow)"/>
+    <path class="flow" stroke="#f472b6" d="M1010 469 C1040 469 1040 445 1070 445" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- ① Inputs -->
+  <g class="t">
+    <rect x="30" y="110" width="200" height="110" rx="12" fill="#0b1b2b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text class="h" x="46" y="140">Image upload</text>
+    <text class="m s" x="46" y="164">templates/index.html</text>
+    <text class="m s" x="46" y="184">POST /detect</text>
+    <text class="m s" x="46" y="204">multipart + options</text>
+
+    <rect x="30" y="250" width="200" height="110" rx="12" fill="#151230" stroke="#a78bfa" stroke-width="1.5"/>
+    <text class="h" x="46" y="280">Live camera / IP</text>
+    <text class="m s" x="46" y="304">index.html · camera.html</text>
+    <text class="m s" x="46" y="324">POST /start_camera</text>
+    <text class="m s" x="46" y="344">{ source: 0 | 1 | URL }</text>
+
+    <rect x="30" y="390" width="200" height="110" rx="12" fill="#22101f" stroke="#f472b6" stroke-width="1.5"/>
+    <text class="h" x="46" y="420">Video upload</text>
+    <text class="m s" x="46" y="444">templates/video.html</text>
+    <text class="m s" x="46" y="464">POST /upload_video</text>
+    <text class="m s" x="46" y="484">file + skip_frames</text>
+  </g>
+
+  <!-- ② Flask backend -->
+  <g class="t">
+    <rect x="290" y="110" width="220" height="110" rx="12" fill="#121a2e" stroke="#a78bfa" stroke-width="1.5"/>
+    <text class="h" x="306" y="140">Decode request</text>
+    <text class="m s" x="306" y="164">np.frombuffer →</text>
+    <text class="m s" x="306" y="184">cv2.imdecode(BGR)</text>
+    <text class="m s" x="306" y="204">conf · edges · calibration</text>
+
+    <rect x="290" y="250" width="220" height="110" rx="12" fill="#121a2e" stroke="#a78bfa" stroke-width="1.5"/>
+    <text class="h" x="306" y="280">Camera frame loop</text>
+    <text class="m s" x="306" y="304">cv2.VideoCapture</text>
+    <text class="m s" x="306" y="324">generate_frames()</text>
+    <text class="m s" x="306" y="344">guarded by camera_lock</text>
+
+    <rect x="290" y="390" width="220" height="110" rx="12" fill="#121a2e" stroke="#a78bfa" stroke-width="1.5"/>
+    <text class="h" x="306" y="420">Async video job</text>
+    <text class="m s" x="306" y="444">save → static/uploads/</text>
+    <text class="m s" x="306" y="464">daemon thread worker</text>
+    <text class="m s" x="306" y="484">video_jobs{} + lock</text>
+  </g>
+
+  <!-- ③ YOLO core -->
+  <g class="t">
+    <rect x="570" y="160" width="180" height="290" rx="14" fill="url(#core)" stroke="#f59e0b" stroke-width="2"/>
+    <rect class="pulse" x="564" y="154" width="192" height="302" rx="18" fill="none" stroke="#fbbf24" stroke-width="1.5" filter="url(#glow)"/>
+    <g clip-path="url(#coreClip)">
+      <rect x="570" y="140" width="180" height="40" fill="url(#scan)">
+        <animate attributeName="y" values="140;430;140" dur="3s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+    <text x="660" y="200" text-anchor="middle" font-size="24" font-weight="800" fill="#fbbf24">YOLO11l</text>
+    <text x="660" y="222" text-anchor="middle" font-size="12" fill="#fcd34d">Ultralytics detector</text>
+    <line x1="590" y1="236" x2="730" y2="236" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <g class="m" font-size="12" fill="#fde68a">
+      <text x="588" y="262">best.pt (fine-tuned)</text>
+      <text x="588" y="284">train imgsz 1024</text>
+      <text x="588" y="306">conf ≥ threshold</text>
+      <text x="588" y="328">NMS IoU = 0.45</text>
+      <text x="588" y="350">nc = 1 multicopter</text>
+      <text x="588" y="372">loaded once at boot</text>
+    </g>
+    <text x="660" y="420" text-anchor="middle" font-size="11" fill="#a16207">boxes · scores · class</text>
+  </g>
+
+  <!-- ④ Post-processing chain -->
+  <g class="t">
+    <rect class="step s1" x="810" y="100" width="200" height="66" rx="10" fill="#0c1f1a" stroke="#1f6f57" stroke-width="1.8"/>
+    <text class="h" x="824" y="126" font-size="14">Edge filter</text>
+    <text class="m s" x="824" y="148">skip outer 6% (optional)</text>
+
+    <rect class="step s2" x="810" y="184" width="200" height="66" rx="10" fill="#0c1f1a" stroke="#1f6f57" stroke-width="1.8"/>
+    <text class="h" x="824" y="210" font-size="14">Annotate + direction</text>
+    <text class="m s" x="824" y="232">box · center · crosshair</text>
+
+    <rect class="step s3" x="810" y="268" width="200" height="66" rx="10" fill="#0c1f1a" stroke="#1f6f57" stroke-width="1.8"/>
+    <text class="h" x="824" y="294" font-size="14">IoU tracker</text>
+    <text class="m s" x="824" y="316">IoU≥0.2 · EMA 0.65</text>
+    <rect x="938" y="278" width="64" height="16" rx="8" fill="#a78bfa33"/>
+    <text class="m" x="970" y="290" text-anchor="middle" font-size="9.5" fill="#c4b5fd">cam·video</text>
+
+    <rect class="step s4" x="810" y="352" width="200" height="66" rx="10" fill="#0c1f1a" stroke="#1f6f57" stroke-width="1.8"/>
+    <text class="h" x="824" y="378" font-size="14">Range estimate</text>
+    <text class="m s" x="824" y="400">f_px · W_m / w_px</text>
+
+    <rect class="step s5" x="810" y="436" width="200" height="66" rx="10" fill="#0c1f1a" stroke="#1f6f57" stroke-width="1.8"/>
+    <text class="h" x="824" y="462" font-size="14">Map overlay</text>
+    <text class="m s" x="824" y="484">perspective image plane</text>
+    <rect x="938" y="446" width="64" height="16" rx="8" fill="#a78bfa33"/>
+    <text class="m" x="970" y="458" text-anchor="middle" font-size="9.5" fill="#c4b5fd">cam·video</text>
+  </g>
+
+  <!-- ⑤ Delivery -->
+  <g class="t">
+    <rect x="1070" y="110" width="190" height="110" rx="12" fill="#0b1b2b" stroke="#22d3ee" stroke-width="1.5"/>
+    <text class="h" x="1086" y="140">JSON response</text>
+    <text class="m s" x="1086" y="164">detections[]</text>
+    <text class="m s" x="1086" y="184">+ base64 JPEG</text>
+    <text class="m s" x="1086" y="204">browser draws map</text>
+
+    <rect x="1070" y="250" width="190" height="110" rx="12" fill="#151230" stroke="#a78bfa" stroke-width="1.5"/>
+    <text class="h" x="1086" y="280">MJPEG stream</text>
+    <text class="m s" x="1086" y="304">GET /camera_stream</text>
+    <text class="m s" x="1086" y="324">JPEG q80 frames</text>
+    <text class="m s" x="1086" y="344">poll /camera_status</text>
+
+    <rect x="1070" y="390" width="190" height="110" rx="12" fill="#22101f" stroke="#f472b6" stroke-width="1.5"/>
+    <text class="h" x="1086" y="420">Annotated MP4</text>
+    <text class="m s" x="1086" y="444">static/processed/</text>
+    <text class="m s" x="1086" y="464">mp4v · VideoWriter</text>
+    <text class="m s" x="1086" y="484">poll /video_status/id</text>
+  </g>
+
+  <!-- Feedback loop back to the browser -->
+  <path class="flow" stroke="#475569" d="M1165 500 V578 H130 V506" marker-end="url(#arrow)"/>
+  <rect x="380" y="564" width="520" height="28" rx="14" fill="#0b1220" stroke="#334155"/>
+  <text class="t" x="640" y="583" text-anchor="middle" font-size="12.5" fill="#cbd5e1">Browser renders results · user tunes /set_threshold · /set_display_options · /set_detection_options</text>
+
+  <!-- Moving packets, one per input route -->
+  <g filter="url(#glow)">
+    <circle r="6" fill="#22d3ee"><animateMotion dur="6s" repeatCount="indefinite" begin="0s"><mpath href="#routeImg"/></animateMotion></circle>
+    <circle r="6" fill="#a78bfa"><animateMotion dur="5s" repeatCount="indefinite" begin="1s"><mpath href="#routeCam"/></animateMotion></circle>
+    <circle r="6" fill="#a78bfa"><animateMotion dur="5s" repeatCount="indefinite" begin="3.5s"><mpath href="#routeCam"/></animateMotion></circle>
+    <circle r="6" fill="#f472b6"><animateMotion dur="7s" repeatCount="indefinite" begin="2s"><mpath href="#routeVid"/></animateMotion></circle>
+  </g>
+
+  <!-- Legend -->
+  <g class="t" font-size="12.5" fill="#94a3b8">
+    <circle cx="40" cy="630" r="6" fill="#22d3ee"/><text x="54" y="634">Image route — single frame, no tracking</text>
+    <circle cx="340" cy="630" r="6" fill="#a78bfa"/><text x="354" y="634">Live camera route — tracked, MJPEG</text>
+    <circle cx="620" cy="630" r="6" fill="#f472b6"/><text x="634" y="634">Video route — async job, tracked, MP4</text>
+    <rect x="930" y="622" width="36" height="16" rx="8" fill="#a78bfa33"/><text class="m" x="948" y="634" text-anchor="middle" font-size="9.5" fill="#c4b5fd">cam</text>
+    <text x="974" y="634">= stage runs only for camera &amp; video</text>
+  </g>
+</svg>

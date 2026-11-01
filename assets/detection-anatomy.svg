@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-label="Animated detection anatomy: bounding box, center offset guidance, edge filtering and the image-plane map">
+  <title>Detection anatomy and image-plane map</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#070d1a"/><stop offset="1" stop-color="#0f1a33"/></linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e3a5f"/><stop offset="1" stop-color="#0b1726"/></linearGradient>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="8" fill="#ef4444" fill-opacity="0.22"/></pattern>
+    <clipPath id="frameClip"><rect x="30" y="70" width="640" height="360" rx="8"/></clipPath>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <style>
+      .t { font-family: 'Segoe UI', Inter, Helvetica, Arial, sans-serif; }
+      .m { font-family: Consolas, Menlo, 'Courier New', monospace; }
+      .rotor { animation: spin 0.22s linear infinite; transform-box: fill-box; transform-origin: center; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .ping { animation: ping 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+      @keyframes ping { 0% { transform: scale(0.4); opacity: 0.9; } 100% { transform: scale(2.6); opacity: 0; } }
+    </style>
+  </defs>
+  <rect width="1280" height="520" rx="18" fill="url(#bg)"/>
+
+  <text class="t" x="30" y="44" font-size="20" font-weight="800" fill="#e2e8f0">Detection anatomy</text>
+  <text class="m" x="230" y="44" font-size="13" fill="#64748b">draw_detection_with_center() · get_direction()</text>
+  <text class="t" x="730" y="44" font-size="20" font-weight="800" fill="#e2e8f0">Image-plane map</text>
+  <text class="m" x="918" y="44" font-size="13" fill="#64748b">draw_scene_map_overlay()</text>
+
+  <!-- camera frame -->
+  <g clip-path="url(#frameClip)">
+    <rect x="30" y="70" width="640" height="360" fill="url(#sky)"/>
+    <path d="M30 380 Q190 340 350 370 T670 360 V430 H30Z" fill="#0a1420"/>
+    <!-- 6% edge band -->
+    <path fill-rule="evenodd" fill="url(#hatch)" d="M30 70h640v360h-640z M68.4 91.6v316.8h563.2v-316.8z"/>
+    <!-- crosshair + aligned zone -->
+    <line x1="30" y1="250.0" x2="670" y2="250.0" stroke="#fbbf24" stroke-opacity="0.35" stroke-dasharray="4 6"/>
+    <line x1="350.0" y1="70" x2="350.0" y2="430" stroke="#fbbf24" stroke-opacity="0.35" stroke-dasharray="4 6"/>
+    <rect x="318.0" y="232.0" width="64.0" height="36.0" fill="#fbbf24" fill-opacity="0.08" stroke="#fbbf24" stroke-dasharray="3 3"/>
+    <circle cx="350.0" cy="250.0" r="5" fill="none" stroke="#fbbf24" stroke-width="2"/>
+
+    <!-- center-to-target vector -->
+    <line x1="350.0" y1="250.0" x2="520" y2="160" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6 4">
+      <animate attributeName="x2" values="520;520;355;355;190;190;640;640;520" keyTimes="0;0.17;0.25;0.42;0.5;0.67;0.75;0.92;1" dur="12s" repeatCount="indefinite"/>
+      <animate attributeName="y2" values="160;160;255;255;330;330;340;340;160" keyTimes="0;0.17;0.25;0.42;0.5;0.67;0.75;0.92;1" dur="12s" repeatCount="indefinite"/>
+    </line>
+
+    <!-- drone + bounding box -->
+    <g>
+      <animateMotion calcMode="linear" values="520,160;520,160;355,255;355,255;190,330;190,330;640,340;640,340;520,160" keyTimes="0;0.17;0.25;0.42;0.5;0.67;0.75;0.92;1" dur="12s" repeatCount="indefinite"/>
+      <path d="M-26 -11 L26 11 M26 -11 L-26 11" stroke="#cbd5e1" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="-9" y="-6" width="18" height="12" rx="3" fill="#e2e8f0"/>
+      <ellipse class="rotor" cx="-26" cy="-11" rx="12" ry="2.5" fill="#94a3b8"/>
+      <ellipse class="rotor" cx="26" cy="-11" rx="12" ry="2.5" fill="#94a3b8"/>
+      <ellipse class="rotor" cx="-26" cy="11" rx="12" ry="2.5" fill="#94a3b8"/>
+      <ellipse class="rotor" cx="26" cy="11" rx="12" ry="2.5" fill="#94a3b8"/>
+      <rect x="-42" y="-26" width="84" height="52" fill="none" stroke-width="2" stroke="#34d399">
+        <animate attributeName="stroke" values="#34d399;#ef4444;#34d399" keyTimes="0;0.75;0.95" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="-42" y="-44" width="96" height="18" fill="#34d399">
+        <animate attributeName="fill" values="#34d399;#ef4444;#34d399" keyTimes="0;0.75;0.95" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      </rect>
+      <text class="m" x="-38" y="-31" font-size="11" font-weight="700" fill="#04130c">ID 1 · 0.91</text>
+      <circle r="3.5" fill="#f472b6"/>
+    </g>
+    <g opacity="0"><animate attributeName="opacity" values="1;0" keyTimes="0;0.2" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      <rect x="42" y="390" width="300" height="28" rx="6" fill="#020617" fill-opacity="0.85" stroke="#34d399"/>
+      <text class="m" x="54" y="409" font-size="13" fill="#6ee7b7">Outside · Right: 0.53, Up: 0.50</text></g>
+<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.25;0.45" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      <rect x="42" y="390" width="300" height="28" rx="6" fill="#020617" fill-opacity="0.85" stroke="#34d399"/>
+      <text class="m" x="54" y="409" font-size="13" fill="#6ee7b7">Inside · Target aligned</text></g>
+<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;0.7" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      <rect x="42" y="390" width="300" height="28" rx="6" fill="#020617" fill-opacity="0.85" stroke="#34d399"/>
+      <text class="m" x="54" y="409" font-size="13" fill="#6ee7b7">Outside · Left: 0.50, Down: 0.44</text></g>
+<g opacity="0"><animate attributeName="opacity" values="0;1;0" keyTimes="0;0.75;0.95" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+      <rect x="42" y="390" width="300" height="28" rx="6" fill="#020617" fill-opacity="0.85" stroke="#ef4444"/>
+      <text class="m" x="54" y="409" font-size="13" fill="#fca5a5">Ignored · box touches 6% edge</text></g>
+  </g>
+  <rect x="30" y="70" width="640" height="360" rx="8" fill="none" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- map panel -->
+  <rect x="730" y="70" width="520" height="360" rx="8" fill="#090c12" stroke="#334155" stroke-width="1.5"/>
+  <g stroke="#4a525b" stroke-width="1"><line x1="844.4" y1="98.8" x2="745.6" y2="415.6"/><line x1="844.4" y1="98.8" x2="1135.6" y2="98.8"/><line x1="892.9" y1="98.8" x2="827.1" y2="415.6"/><line x1="827.9" y1="151.6" x2="1152.1" y2="151.6"/><line x1="941.5" y1="98.8" x2="908.5" y2="415.6"/><line x1="811.5" y1="204.4" x2="1168.5" y2="204.4"/><line x1="990.0" y1="98.8" x2="990.0" y2="415.6"/><line x1="795.0" y1="257.2" x2="1185.0" y2="257.2"/><line x1="1038.5" y1="98.8" x2="1071.5" y2="415.6"/><line x1="778.5" y1="310.0" x2="1201.5" y2="310.0"/><line x1="1087.1" y1="98.8" x2="1152.9" y2="415.6"/><line x1="762.1" y1="362.8" x2="1217.9" y2="362.8"/><line x1="1135.6" y1="98.8" x2="1234.4" y2="415.6"/><line x1="745.6" y1="415.6" x2="1234.4" y2="415.6"/></g>
+  <polygon points="844.4,98.8 1135.6,98.8 1234.4,415.6 745.6,415.6" fill="none" stroke="#64748b" stroke-width="2"/>
+  <circle cx="990.0" cy="257.2" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+  <g>
+    <animateMotion calcMode="linear" values="1080.5,178.0;1080.5,178.0;993.1,261.6;993.1,261.6;881.5,327.6;881.5,327.6;1189.1,336.4;1189.1,336.4;1080.5,178.0" keyTimes="0;0.17;0.25;0.42;0.5;0.67;0.75;0.92;1" dur="12s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="1;0;1" keyTimes="0;0.75;0.95" calcMode="discrete" dur="12s" repeatCount="indefinite"/>
+    <circle r="7" fill="#34d399" filter="url(#glow)"/>
+    <circle r="7" fill="none" stroke="#34d399" stroke-width="2" class="ping"/>
+    <text class="m" x="12" y="-10" font-size="12" fill="#6ee7b7">ID 1</text>
+  </g>
+  <text class="m" x="744" y="94" font-size="11" fill="#94a3b8">u = cx / W · v = cy / H</text>
+  <text class="m" x="1236" y="94" font-size="11" fill="#94a3b8" text-anchor="end">smoothed center (EMA 0.65)</text>
+
+  <!-- captions -->
+  <g class="t" font-size="13" fill="#94a3b8">
+    <rect x="30" y="452" width="14" height="14" fill="url(#hatch)" stroke="#ef4444"/><text x="52" y="464">outer 6% edge band — boxes touching it are dropped when hide_edges is on</text>
+    <rect x="30" y="478" width="14" height="14" fill="#fbbf24" fill-opacity="0.15" stroke="#fbbf24" stroke-dasharray="3 3"/><text x="52" y="490">|offset| &lt; 0.10 of half-frame on both axes → “Target aligned”</text>
+    <text x="730" y="464">Each tracked center is normalised to (u, v) and drawn on a perspective-styled grid.</text>
+    <text x="730" y="490">It is a visualisation of image coordinates — not a measured 3D position.</text>
+  </g>
+</svg>
